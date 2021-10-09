@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="img">
+    <file>ressources/0_SUP.png</file>
+    <file>ressources/0_BOT.png</file>
+    <file>ressources/0_JGL.png</file>
+    <file>ressources/0_MID.png</file>
+    <file>ressources/0_TOP.png</file>
+  </qresource>
+</RCC>

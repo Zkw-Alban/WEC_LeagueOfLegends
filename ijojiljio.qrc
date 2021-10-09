@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="Prefix1">
+    <file>ressources/icons-shadowless/control.png</file>
+  </qresource>
+</RCC>
