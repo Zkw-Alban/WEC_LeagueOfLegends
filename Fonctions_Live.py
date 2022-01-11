@@ -10,14 +10,26 @@ import json
 import requests
 import Fonctions as fc
 
-
+def championName(championName):    
+    if "'" in championName:
+        championName = championName.replace("'","")
+    if "." in championName:
+        championName = championName.replace(".","")
+    if " " in championName:
+        championName = championName.replace(" ","") 
+    newName = championName
+    if championName == "Wukong":
+        newName = "MonkeyKing"
+    elif championName == "ChoGath":
+        newName = "Chogath"   
+    return newName
 
 def requestLiveGameData(URL):
     """Renvoie le fichier JSON associé à la game en cours"""
     return requests.get(URL, verify=False).json()
 
 
-def getGameInfo(gameData, lol_watcher):
+def getGameInfo(gameData, lol_watcher, root):
     """Renvoie dans une liste toutes les infos utiles d'une game"""
     playerList = []
     championNameList = []
@@ -25,27 +37,24 @@ def getGameInfo(gameData, lol_watcher):
     skinList = []
     teamList = []
     championIdList = []
-    tiles = "/ressources/dataDragon/img/champion/tiles/"
+    tiles = root+"/ressources/dataDragon/img/champion/tiles/"
     patch = "patch 11.17"
     matchId = "id du match"
     win = 100
 
     #Infos depuis le Client
     for i in range(10):
-        with open("/ressources/dataDragon/11.18.1/data/fr_FR/champion/"+gameData['allPlayers'][i]['championName']+".json") as json_file:
+        with open(root+"/ressources/dataDragon/11.18.1/data/fr_FR/champion/"+gameData['allPlayers'][i]['championName']+".json", encoding='utf-8') as json_file:
             championInfo = json.load(json_file)
         playerList.append(gameData['allPlayers'][i]['summonerName'])
-        championNameList.append(gameData['allPlayers'][i]['championName'])
+        championNameList.append(championName(gameData['allPlayers'][i]['championName']))
         positionList.append(gameData['allPlayers'][i]['position'])
         teamList.append(gameData['allPlayers'][i]['team'])
-        championIdList.append(championInfo["data"][str(championNameList[-1]).replace("î","i")]['key'])
-        if gameData['allPlayers'][i]['championName'] == "Maître Yi":
-            skinList.append(tiles+"Maitre Yi"+"_"+str(gameData['allPlayers'][i]['skinID'])+".jpg")
-        else:
-            skinList.append(tiles+gameData['allPlayers'][i]['championName']+"_"+str(gameData['allPlayers'][i]['skinID'])+".jpg")
-        #Festion des chromas qui ont un skin id différent mais pas d'image spécifique
-        if not os.path.isfile(tiles+"Maitre Yi"+"_"+str(gameData['allPlayers'][i]['skinID'])+".jpg"):
-            skinList[i] = tiles+gameData['allPlayers'][i]['championName']+"_"+str(0)+".jpg"
+        championIdList.append(championInfo["data"][str(championNameList[-1])]['key'])
+        skinList.append(tiles+championName(gameData['allPlayers'][i]['championName']).replace("î","i")+"_"+str(gameData['allPlayers'][i]['skinID'])+".jpg")
+        #Gestion des chromas qui ont un skin id différent mais pas d'image spécifique
+        if not os.path.isfile(skinList[-1]):
+            skinList[-1] = tiles+gameData['allPlayers'][i]['championName']+"_"+str(0)+".jpg"
 
     eloList = []
     rankList = []
@@ -60,35 +69,50 @@ def getGameInfo(gameData, lol_watcher):
             summonerRanked = fc.requestRankedData(summonerInfo['id'], lol_watcher)
             #On vérifie que le summoner a joué en ranked
             if summonerRanked:
-                #il faut que le joueur ait joué au moins 10 parties et en soloQ
-                if summonerRanked[0]['queueType'] == "RANKED_SOLO_5x5":
+                #On vérifie que les soloQ sont en 1ère position
+                if summonerRanked[0]['queueType'] != "RANKED_SOLO_5x5":
                     eloList.append(fc.getElo(summonerRanked[0]['tier'], fc.getRank(summonerRanked[0]['rank'])))
+                    rankList.append(summonerRanked[0]['tier']+" "+summonerRanked[0]['rank'])
                     if summonerRanked[0]['hotStreak']:
                         streakList.append(1)
                     else:
                         streakList.append(0)
+                    #il faut que le joueur ait joué au moins 10 parties et en soloQ
                     if (summonerRanked[0]['wins'] + summonerRanked[0]['losses']) > 10 :
                         winrateList.append(round(summonerRanked[0]['wins']/(summonerRanked[0]['wins'] + summonerRanked[0]['losses']),2))
-                    else: winrateList.append(0.5)
-                else:
+                    else: 
+                        winrateList.append(0.5)
+                #On vérifie que les soloQ sont en 2e position
+                elif len(summonerRanked)>1:
                     eloList.append(fc.getElo(summonerRanked[1]['tier'], fc.getRank(summonerRanked[1]['rank'])))
+                    rankList.append(summonerRanked[1]['tier']+" "+summonerRanked[1]['rank'])
                     if summonerRanked[1]['hotStreak']:
                         streakList.append(1)
                     else:
                         streakList.append(0)
-                    if (summonerRanked[1]['wins'] + summonerRanked[1]['losses']) > 10 : #il faut que le joueur ait joué au moins 10 partie
+                    #il faut que le joueur ait joué au moins 10 partie
+                    if (summonerRanked[1]['wins'] + summonerRanked[1]['losses']) > 10 : 
                         winrateList.append(round(summonerRanked[1]['wins']/(summonerRanked[1]['wins'] + summonerRanked[1]['losses']),2))
-                    else: winrateList.append(0.5)
+                    else: 
+                        winrateList.append(0.5)
+                #Le joueur n'a pas joué en soloQ
+                else:
+                    eloList.append(19)
+                    rankList.append("No SoloQ Data")
+                    winrateList.append(50)
+                    streakList.append(0)
+            #Le joueur n'a pas joué en ranked
             else:
                 eloList.append(19)
-                rankList.append("No Data")
-                streakList.append(False)
+                rankList.append("No Ranked Data")
                 winrateList.append(50)
+                streakList.append(0)
+        #Ce n'est pas un joueur
         else:
             eloList.append(19)
             rankList.append("Not a player")
             winrateList.append(50)
-            streakList.append(False)
+            streakList.append(0)
 
     liveData = {"Rank_0": eloList[0], "streak_0": streakList[0],
                 "winratePlayer_0": winrateList[0], "Team_0": teamList[0],
@@ -123,5 +147,4 @@ def getGameInfo(gameData, lol_watcher):
               "Patch": patch, "matchId": matchId, "Win": win}
 
     displayInfo = [championNameList, skinList, rankList, winrateList, streakList]
-
     return liveData, displayInfo

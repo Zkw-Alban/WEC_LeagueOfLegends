@@ -9,7 +9,29 @@ import time
 import pandas as pd
 from termcolor import colored
 from riotwatcher import  ApiError
+from bs4 import BeautifulSoup
+from requests_html import HTMLSession
 
+
+def left(s, amount):
+    return s[:amount]
+
+def right(s, amount):
+    return s[-amount:]
+
+def championName(championName):    
+    if "'" in championName:
+        championName = championName.replace("'","")
+    if "." in championName:
+        championName = championName.replace(".","")
+    if " " in championName:
+        championName = championName.replace(" ","") 
+    newName = championName
+    if championName == "Wukong":
+        newName = "MonkeyKing"
+    elif championName == "ChoGath":
+        newName = "Chogath"   
+    return newName
 
 def requestSummonerData(summonerName, lol_watcher):
     """Renvoie les données de compte du joueur vi summonerName"""
@@ -72,7 +94,7 @@ def requestRankedData(ID, lol_watcher):
 def requestGamesPlayed(puuid, lol_watcher, queueId, nbGames):
     """Renvoie la liste des games jouées du joueur"""
     try:
-        return lol_watcher.match_v5.matchlist_by_puuid('EUROPE',
+        return lol_watcher.match.matchlist_by_puuid('EUROPE',
                                                        puuid,
                                                        queue = queueId,
                                                        count = nbGames)
@@ -94,7 +116,7 @@ def requestGamesPlayed(puuid, lol_watcher, queueId, nbGames):
 def requestMatchData(matchId, lol_watcher):
     """Renvoie les données du match"""
     try:
-        return lol_watcher.match_v5.by_id('EUROPE',matchId)
+        return lol_watcher.match.by_id('EUROPE',matchId)
     except ApiError as err:
         if err.response.status_code == 429:
             print('We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
@@ -119,40 +141,70 @@ def getPlayerList(summonerName, playerList, queue, nbGames, nbMaxPlayer, lol_wat
         matchList = requestGamesPlayed(requestSummonerData(summonerName, lol_watcher)["puuid"], lol_watcher, queue, nbGames)
         playerList = []
         for matchId in matchList:
+            print("Step1 : get match data")
             matchData = requestMatchData(matchId, lol_watcher)
             if matchData:
                 playerList += matchData['metadata']['participants']
                 playerList = list(dict.fromkeys(playerList))
-                
+
     playerList_new = []
     start = True      
     print("List length:", len(playerList)) 
     while len(playerList) < nbMaxPlayer:
         print("starting over...adding more players to the list")
         if start:
-            playerList_new = playerList
-            start = False
+            playerList_new = playerList            
         
-        matchList = []
-        for player in playerList_new:
-            matchList += requestGamesPlayed(player, lol_watcher, queue, nbGames)
-        
+        matchList = []                     #on vide la matchList
+        #print("creating matchList with players", playerList_new)    
+        for player in playerList_new:  
+            if start == False and player not in playerList:
+                matchList += requestGamesPlayed(player, lol_watcher, queue, nbGames)     
+            elif start == True:
+                matchList += requestGamesPlayed(player, lol_watcher, queue, nbGames)   
+                
         print("collecting players id from", len(matchList), "games")
+        if start:
+            start = False
+        playerList += playerList_new
+        playerList = list(dict.fromkeys(playerList))
         playerList_new = []    
         for matchId in matchList:
             matchData = requestMatchData(matchId, lol_watcher)
             if matchData:
+                #print("adding summoners", matchData['metadata']['participants'])
                 playerList_new += matchData['metadata']['participants']
                 playerList_new = list(dict.fromkeys(playerList_new))
             if (len(playerList)+len(playerList_new)) > nbMaxPlayer:
-                break
-                 
-        playerList += playerList_new
-        playerList = list(dict.fromkeys(playerList))
+                break  
         print("adding", len(playerList_new), "players\nList length:", len(playerList)) 
-                
-                               
+    
+    playerList += playerList_new
+    playerList = list(dict.fromkeys(playerList))  
     return list(dict.fromkeys(playerList))
+
+def getPlayerStatsOnChampion(summonerName, championName):
+    """Renvoie les statistiques du joueur sélectionné pour le champion sélectionné.
+    Exemple de retour : Nb games jouées : 33 (int), Winrate : 63.2 (float)
+    exemple pour KhaZix et MonkeyKing : EUW1_5448612206"""
+    if championName.lower() == "monkeyking":
+        championName = "wukong"
+    url = 'https://www.leagueofgraphs.com/fr/summoner/champions/'+championName+'/euw/'+summonerName
+    session = HTMLSession()
+    response = session.get(url)
+    html_doc = response.content
+    soup = BeautifulSoup(html_doc, 'html.parser')
+    gamesPlayedOnChampion = 0
+    winrateOnChampion = 0.5
+    listgraph = ["graphDD53","graphDD54","graphDD55","graphDD56","graphDD57","graphDD58","graphDD59"]  #list of graphs to check for the player data
+    for graph in listgraph:
+        if soup.find(id=graph):
+            if right(soup.find(id=graph).string.strip(),1) == "%":
+                winrateOnChampion = float(left(soup.find(id=graph).string.strip(),len(soup.find(id=graph).string.strip())-1))
+            elif len(soup.find(id=graph).string.strip()) > 0:
+                gamesPlayedOnChampion = int(soup.find(id=graph).string.strip())
+    return gamesPlayedOnChampion, winrateOnChampion  
+    
 
 def getRank(rank):
     """Renvoie le rank du jouer en int"""
@@ -220,23 +272,27 @@ def getGameData(matchId, lol_watcher):
     team = []
     champion = []
     position = []
+    championName = []
+    summonerName = []
     for i in range(10):
         participants.append(str(matchData['info']['participants'][i]['summonerId']))
         position.append(getPosition(matchData['info']['participants'][i]['teamPosition']))
         team.append(matchData['info']['participants'][i]['teamId'])
         champion.append(matchData['info']['participants'][i]['championId'])
+        championName.append(matchData['info']['participants'][i]['championName'].lower())
+        summonerName.append(matchData['info']['participants'][i]['summonerName'])
 
     #Informations des joueurs en ranked
     elo = []
     streak = []
     winrate = []
     for sumID in participants:
-        #On vérifie que le summoner est un joueur
-        if sumID:
+        #On vérifie que le summoner est un joueur        
+        if sumID:            
             rankedData = requestRankedData(sumID, lol_watcher)
             #On vérifie que le summoner a joué en ranked
             if rankedData:
-                if rankedData[0]['queueType'] == "RANKED_SOLO_SR":
+                if rankedData[0]['queueType'] == "RANKED_SOLO_5x5":
                     elo.append(getElo(rankedData[0]['tier'], getRank(rankedData[0]['rank'])))
                     if rankedData[0]['hotStreak']:
                         streak.append(1)
@@ -246,60 +302,98 @@ def getGameData(matchId, lol_watcher):
                     if (rankedData[0]['wins'] + rankedData[0]['losses']) > 10 :
                         winrate.append(round(rankedData[0]['wins']/(rankedData[0]['wins'] + rankedData[0]['losses']),2))
                     else: winrate.append(0.5)
-                elif len(rankedData)>1:
-                    elo.append(getElo(rankedData[1]['tier'], getRank(rankedData[1]['rank'])))
-                    if rankedData[1]['hotStreak']:
-                        streak.append(1)
+                elif len(rankedData) > 1:
+                    if rankedData[1]['queueType'] == "RANKED_SOLO_5x5":                    
+                        elo.append(getElo(rankedData[1]['tier'], getRank(rankedData[1]['rank'])))
+                        if rankedData[1]['hotStreak']:
+                            streak.append(1)
+                        else:
+                            streak.append(0)
+                        #il faut que le joueur ait joué au moins 10 partie
+                        if (rankedData[1]['wins'] + rankedData[1]['losses']) > 10 :
+                            winrate.append(round(rankedData[1]['wins']/(rankedData[1]['wins'] + rankedData[1]['losses']),2))
+                        else: winrate.append(0.5)
+                    elif len(rankedData) == 3:
+                        if rankedData[2]['queueType'] == "RANKED_SOLO_5x5":
+                            elo.append(getElo(rankedData[2]['tier'], getRank(rankedData[2]['rank'])))
+                            if rankedData[2]['hotStreak']:
+                                streak.append(1)
+                            else:
+                                streak.append(0)
+                            #il faut que le joueur ait joué au moins 10 partie
+                            if (rankedData[2]['wins'] + rankedData[2]['losses']) > 10 :
+                                winrate.append(round(rankedData[1]['wins']/(rankedData[1]['wins'] + rankedData[2]['losses']),2))
+                            else: winrate.append(0.5)
+                        else:
+                            elo.append(19)
+                            streak.append(0)
+                            winrate.append(0.5)
                     else:
+                        elo.append(19)
                         streak.append(0)
-                    #il faut que le joueur ait joué au moins 10 partie
-                    if (rankedData[1]['wins'] + rankedData[1]['losses']) > 10 :
-                        winrate.append(round(rankedData[1]['wins']/(rankedData[1]['wins'] + rankedData[1]['losses']),2))
-                    else: winrate.append(0.5)
+                        winrate.append(0.5)
                 else:
                     elo.append(19)
                     streak.append(0)
-                    winrate.append(0.5)   
+                    winrate.append(0.5)
             else:
                 elo.append(19)
                 streak.append(0)
                 winrate.append(0.5)
         else:
-            print("Not a player")
+            print("Not a player.")
 
-
+    winrateOnChampion = []
+    i = 0
+    for i in range(0,10):
+        gamesPlayedOnChampion, wr = getPlayerStatsOnChampion(summonerName[i], championName[i])
+        if gamesPlayedOnChampion > 5:
+            winrateOnChampion.append(wr)
+        else:
+            winrateOnChampion.append(0.5)
+        
     eloDiff = round((sum(elo[0:4])/5) - (sum(elo[5:9])/5),2)
 
     ListFinale = {"Rank_0": elo[0], "streak_0": streak[0],
                   "winratePlayer_0": winrate[0], "Team_0": team[0],
                   "Champion_0": champion[0], "Position_0": position[0],
+                  "winrateOnChampion_0":winrateOnChampion[0],
                   "Rank_1": elo[1], "streak_1": streak[1],
                   "winratePlayer_1": winrate[1], "Team_1": team[1],
                   "Champion_1": champion[1], "Position_1": position[1],
+                  "winrateOnChampion_1":winrateOnChampion[1],
                   "Rank_2": elo[2], "streak_2": streak[2],
                   "winratePlayer_2": winrate[2], "Team_2": team[2],
                   "Champion_2": champion[2], "Position_2": position[2],
+                  "winrateOnChampion_2":winrateOnChampion[2],
                   "Rank_3": elo[3], "streak_3": streak[3],
                   "winratePlayer_3": winrate[3], "Team_3": team[3],
                   "Champion_3": champion[3], "Position_3": position[3],
+                  "winrateOnChampion_3":winrateOnChampion[3],
                   "Rank_4": elo[4], "streak_4": streak[4],
                   "winratePlayer_4": winrate[4], "Team_4": team[4],
                   "Champion_4": champion[4], "Position_4": position[4],
+                  "winrateOnChampion_4":winrateOnChampion[4],
                   "Rank_5": elo[5], "streak_5": streak[5],
                   "winratePlayer_5": winrate[5], "Team_5": team[5],
                   "Champion_5": champion[5], "Position_5": position[5],
+                  "winrateOnChampion_5":winrateOnChampion[5],
                   "Rank_6": elo[6], "streak_6": streak[6],
                   "winratePlayer_6": winrate[6], "Team_6": team[6],
                   "Champion_6": champion[6], "Position_6": position[6],
+                  "winrateOnChampion_6":winrateOnChampion[6],
                   "Rank_7": elo[7], "streak_7": streak[7],
                   "winratePlayer_7": winrate[7], "Team_7": team[7],
                   "Champion_7": champion[7], "Position_7": position[7],
+                  "winrateOnChampion_7":winrateOnChampion[7],
                   "Rank_8": elo[8], "streak_8": streak[8],
                   "winratePlayer_8": winrate[8], "Team_8": team[8],
                   "Champion_8": champion[8], "Position_8": position[8],
+                  "winrateOnChampion_8":winrateOnChampion[8],
                   "Rank_9": elo[9], "streak_9": streak[9],
                   "winratePlayer_9": winrate[9], "Team_9": team[9],
                   "Champion_9": champion[9], "Position_9": position[9],
+                  "winrateOnChampion_9":winrateOnChampion[9],
                   "EloDiff": eloDiff, "Patch": patch, "matchId": matchId,
                   "Win": win}
 
@@ -309,16 +403,16 @@ def getGameData(matchId, lol_watcher):
 
 def tonsOfData(puuid, queue, nbGames, chemin_export, lol_watcher, matchListHistory):
     matchList = requestGamesPlayed(puuid, lol_watcher, queue, nbGames)
-    Colunms_Name = ["Rank_0", "streak_0", "winratePlayer_0", "Team_0", "Champion_0", "Position_0",
-                   "Rank_1", "streak_1", "winratePlayer_1", "Team_1", "Champion_1", "Position_1",
-                   "Rank_2", "streak_2", "winratePlayer_2", "Team_2", "Champion_2", "Position_2",
-                   "Rank_3", "streak_3", "winratePlayer_3", "Team_3", "Champion_3", "Position_3",
-                   "Rank_4", "streak_4", "winratePlayer_4", "Team_4", "Champion_4", "Position_4",
-                   "Rank_5", "streak_5", "winratePlayer_5", "Team_5", "Champion_5", "Position_5",
-                   "Rank_6", "streak_6", "winratePlayer_6", "Team_6", "Champion_6", "Position_6",
-                   "Rank_7", "streak_7", "winratePlayer_7", "Team_7", "Champion_7", "Position_7",
-                   "Rank_8", "streak_8", "winratePlayer_8", "Team_8", "Champion_8", "Position_8",
-                   "Rank_9", "streak_9", "winratePlayer_9", "Team_9", "Champion_9", "Position_9",
+    Colunms_Name = ["Rank_0", "streak_0", "winratePlayer_0", "Team_0", "Champion_0", "Position_0","winrateOnChampion_0",
+                   "Rank_1", "streak_1", "winratePlayer_1", "Team_1", "Champion_1", "Position_1","winrateOnChampion_1",
+                   "Rank_2", "streak_2", "winratePlayer_2", "Team_2", "Champion_2", "Position_2","winrateOnChampion_2",
+                   "Rank_3", "streak_3", "winratePlayer_3", "Team_3", "Champion_3", "Position_3","winrateOnChampion_3",
+                   "Rank_4", "streak_4", "winratePlayer_4", "Team_4", "Champion_4", "Position_4","winrateOnChampion_4",
+                   "Rank_5", "streak_5", "winratePlayer_5", "Team_5", "Champion_5", "Position_5","winrateOnChampion_5",
+                   "Rank_6", "streak_6", "winratePlayer_6", "Team_6", "Champion_6", "Position_6","winrateOnChampion_6",
+                   "Rank_7", "streak_7", "winratePlayer_7", "Team_7", "Champion_7", "Position_7","winrateOnChampion_7",
+                   "Rank_8", "streak_8", "winratePlayer_8", "Team_8", "Champion_8", "Position_8","winrateOnChampion_8",
+                   "Rank_9", "streak_9", "winratePlayer_9", "Team_9", "Champion_9", "Position_9","winrateOnChampion_9",
                    "EloDiff", "Patch", "matchId" ,"Win"
                    ]
     match_Datas = pd.DataFrame(columns = Colunms_Name)

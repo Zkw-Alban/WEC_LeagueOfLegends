@@ -11,11 +11,11 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QMessageBox)
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5 import QtCore
 from riotwatcher import LolWatcher
-import cv2
+from cv2 import imread,  destroyAllWindows
 import Fonctions_Live as fcl
 from main_window_ui import Ui_MainWindow
 
-os.chdir(r"D:\Antoine\CNAM\3A\WEC")
+os.chdir(os.getcwd())
 lol_watcher = LolWatcher('RGAPI-1497b4c3-048f-4d37-b2f6-c397facefde7')     #refresh tous les jours
 #pred = prediction(model, gameInfo)
 
@@ -32,8 +32,7 @@ class Window(QMainWindow, Ui_MainWindow):
         
     def about(self):
         """Renvoie un message'About'"""
-        QMessageBox.about(
-            self,
+        QMessageBox.about( 
             "About Sample Editor",
             "<p>A sample text editor app built with:</p>"
             "<p>- PyQt</p>"
@@ -43,31 +42,31 @@ class Window(QMainWindow, Ui_MainWindow):
     def pgmLauncher(self):
         """Execute le programme et affiche les infos"""
         gameData = fcl.requestLiveGameData("https://127.0.0.1:2999/liveclientdata/allgamedata")
-        root = "D:/Antoine/CNAM/3A/WEC/"
+        root = os.getcwd()+"/"
         liveData, displayInfo = fcl.getGameInfo(gameData, lol_watcher, root)
-        self.textBlueMain.setText("Blue Team WEC ?%")
-        self.textRedMain.setText('Red Team WEC ?%')
-        self.textBlueTop.setHtml(displayInfo[0][0]+" elo: "+str(displayInfo[2][0])+" wr: "+str(displayInfo[3][0])+"%"+" streak: "+str(displayInfo[4][0]))
-        self.textBlueJgl.setHtml(displayInfo[0][1]+" elo: "+str(displayInfo[2][1])+" wr: "+str(displayInfo[3][1])+"%"+" streak: "+str(displayInfo[4][1]))
-        self.textBlueMid.setHtml(displayInfo[0][2]+" elo: "+str(displayInfo[2][2])+" wr: "+str(displayInfo[3][2])+"%"+" streak: "+str(displayInfo[4][2]))
-        self.textBlueBot.setHtml(displayInfo[0][3]+" elo: "+str(displayInfo[2][3])+" wr: "+str(displayInfo[3][3])+"%"+" streak: "+str(displayInfo[4][3]))
-        self.textBlueSup.setHtml(displayInfo[0][4]+" elo: "+str(displayInfo[2][4])+" wr: "+str(displayInfo[3][4])+"%"+" streak: "+str(displayInfo[4][4]))
-        self.textRedTop.setHtml(displayInfo[0][5]+" elo: "+str(displayInfo[2][5])+" wr: "+str(displayInfo[3][5])+"%"+" streak: "+str(displayInfo[4][5]))
-        self.textRedJgl.setHtml(displayInfo[0][6]+" elo: "+str(displayInfo[2][6])+" wr: "+str(displayInfo[3][6])+"%"+" streak: "+str(displayInfo[4][6]))
-        self.textRedMid.setHtml(displayInfo[0][7]+" elo: "+str(displayInfo[2][7])+" wr: "+str(displayInfo[3][7])+"%"+" streak: "+str(displayInfo[4][7]))
-        self.textRedBot.setHtml(displayInfo[0][8]+" elo: "+str(displayInfo[2][8])+" wr: "+str(displayInfo[3][8])+"%"+" streak: "+str(displayInfo[4][8]))
-        self.textRedSup.setHtml(displayInfo[0][9]+" elo: "+str(displayInfo[2][9])+" wr: "+str(displayInfo[3][9])+"%"+" streak: "+str(displayInfo[4][9]))
-        self.displayImage(cv2.imread(displayInfo[1][0]), "self.imgBlueTop")
-        self.displayImage(cv2.imread(displayInfo[1][1]), "self.imgBlueJgl")
-        self.displayImage(cv2.imread(displayInfo[1][2]), "self.imgBlueMid")
-        self.displayImage(cv2.imread(displayInfo[1][3]), "self.imgBlueBot")
-        self.displayImage(cv2.imread(displayInfo[1][4]), "self.imgBlueSup")
-        self.displayImage(cv2.imread(displayInfo[1][5]), "self.imgRedTop")
-        self.displayImage(cv2.imread(displayInfo[1][6]), "self.imgRedJgl")
-        self.displayImage(cv2.imread(displayInfo[1][7]), "self.imgRedMid")
-        self.displayImage(cv2.imread(displayInfo[1][8]), "self.imgRedBot")
-        self.displayImage(cv2.imread(displayInfo[1][9]), "self.imgRedSup")
-        cv2.destroyAllWindows()
+        self.textBlueMain.setHtml("Blue Team WEC ?%")
+        self.textRedMain.setHtml('Red Team WEC ?%')
+        self.textBlueTop.setHtml(displayInfo[0][0]+"<br /> "+str(displayInfo[2][0])+"<br />"+str(displayInfo[3][0])+"% wr<br />"+" streak: "+str(displayInfo[4][0]))
+        self.textBlueJgl.setHtml(displayInfo[0][1]+" "+str(displayInfo[2][1])+" "+str(displayInfo[3][1])+"% wr"+" streak: "+str(displayInfo[4][1]))
+        self.textBlueMid.setHtml(displayInfo[0][2]+" "+str(displayInfo[2][2])+" "+str(displayInfo[3][2])+"% wr"+" streak: "+str(displayInfo[4][2]))
+        self.textBlueBot.setHtml(displayInfo[0][3]+" "+str(displayInfo[2][3])+" "+str(displayInfo[3][3])+"% wr"+" streak: "+str(displayInfo[4][3]))
+        self.textBlueSup.setHtml(displayInfo[0][4]+" "+str(displayInfo[2][4])+" "+str(displayInfo[3][4])+"% wr"+" streak: "+str(displayInfo[4][4]))
+        self.textRedTop.setHtml(displayInfo[0][5]+" "+str(displayInfo[2][5])+" "+str(displayInfo[3][5])+"% wr"+" streak: "+str(displayInfo[4][5]))
+        self.textRedJgl.setHtml(displayInfo[0][6]+" "+str(displayInfo[2][6])+" "+str(displayInfo[3][6])+"% wr"+" streak: "+str(displayInfo[4][6]))
+        self.textRedMid.setHtml(displayInfo[0][7]+" "+str(displayInfo[2][7])+" "+str(displayInfo[3][7])+"% wr"+" streak: "+str(displayInfo[4][7]))
+        self.textRedBot.setHtml(displayInfo[0][8]+" "+str(displayInfo[2][8])+" "+str(displayInfo[3][8])+"% wr"+" streak: "+str(displayInfo[4][8]))
+        self.textRedSup.setHtml(displayInfo[0][9]+" "+str(displayInfo[2][9])+" "+str(displayInfo[3][9])+"% wr"+" streak: "+str(displayInfo[4][9]))
+        self.displayImage(imread(displayInfo[1][0]), "self.imgBlueTop")
+        self.displayImage(imread(displayInfo[1][1]), "self.imgBlueJgl")
+        self.displayImage(imread(displayInfo[1][2]), "self.imgBlueMid")
+        self.displayImage(imread(displayInfo[1][3]), "self.imgBlueBot")
+        self.displayImage(imread(displayInfo[1][4]), "self.imgBlueSup")
+        self.displayImage(imread(displayInfo[1][5]), "self.imgRedTop")
+        self.displayImage(imread(displayInfo[1][6]), "self.imgRedJgl")
+        self.displayImage(imread(displayInfo[1][7]), "self.imgRedMid")
+        self.displayImage(imread(displayInfo[1][8]), "self.imgRedBot")
+        self.displayImage(imread(displayInfo[1][9]), "self.imgRedSup")
+        destroyAllWindows()
 
     def displayImage(self, img, obj):
         """Display l'image dans l'objet"""

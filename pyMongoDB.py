@@ -5,7 +5,7 @@ Created on Fri Sep 17 14:52:16 2021
 @author: zkw, lepercq, louesdon
 """
 import os
-os.chdir(r"D:\Cours\annee3\bdd")
+os.chdir(os.getcwd())
 import pandas as pd
 import pymongo
 import seaborn
