@@ -11,7 +11,7 @@ from termcolor import colored
 from riotwatcher import  ApiError
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession
-
+import csv
 
 def left(s, amount):
     return s[:amount]
@@ -30,8 +30,9 @@ def championName(championName):
     if championName == "Wukong":
         newName = "MonkeyKing"
     elif championName == "ChoGath":
-        newName = "Chogath"   
+        newName = "Chogath"
     return newName
+
 
 def requestSummonerData(summonerName, lol_watcher):
     """Renvoie les données de compte du joueur vi summonerName"""
@@ -39,14 +40,14 @@ def requestSummonerData(summonerName, lol_watcher):
         return lol_watcher.summoner.by_name('euw1', summonerName)
     except ApiError as err:
         if err.response.status_code == 429:
-            print('We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
+            print("[requestSummonerData - API Error "+str(err.response.status_code)+'] - We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
             time.sleep(int(err.response.headers['Retry-After'])+1)
             requestSummonerData(summonerName, lol_watcher)
         elif err.response.status_code == 404:
-            print('Summoner with that ridiculous name not found.1')
+            print("[requestSummonerData - API Error "+str(err.response.status_code)+"] - "+ summonerName +" Summoner with that ridiculous name not found.")
             return {}
         elif err.response.status_code >= 500:
-            print("[API Error "+str(err.response.status_code)+"] - Waiting 5 seconds")
+            print("[requestSummonerData - API Error "+str(err.response.status_code)+"] - Waiting 5 seconds")
             time.sleep(5)
             requestSummonerData(summonerName, lol_watcher)
         else:
@@ -59,13 +60,13 @@ def requestSummonerData2(puuid, lol_watcher):
         return lol_watcher.summoner.by_puuid('euw1', puuid)
     except ApiError as err:
         if err.response.status_code == 429:
-            print('We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
+            print("[requestSummonerData2- API Error "+str(err.response.status_code)+'] - We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
             time.sleep(int(err.response.headers['Retry-After'])+1)
             requestSummonerData2(puuid, lol_watcher)
         elif err.response.status_code == 404:
-            print('Summoner with that ridiculous puuid not found. 2')
+            print("[requestSummonerData2 - API Error "+str(err.response.status_code)+"] - "+ puuid +" Summoner with that ridiculous puuid not found.")
         elif err.response.status_code >= 500:
-            print("[API Error "+str(err.response.status_code)+"] - Waiting 5 seconds")
+            print("[requestSummonerData2 - API Error "+str(err.response.status_code)+"] - Waiting 5 seconds")
             time.sleep(5)
             requestSummonerData2(puuid, lol_watcher)
         else:
@@ -78,13 +79,13 @@ def requestRankedData(ID, lol_watcher):
         return lol_watcher.league.by_summoner('euw1', ID)
     except ApiError as err:
         if err.response.status_code == 429:
-            print('We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
+            print("[requestRankedData - API Error "+str(err.response.status_code)+'] - We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
             time.sleep(int(err.response.headers['Retry-After'])+1)
             requestRankedData(ID, lol_watcher)
         elif err.response.status_code == 404:
-            print('Ranked data not found.')
+            print("[requestRankedData - API Error "+str(err.response.status_code)+"] - Ranked data not found.")
         elif err.response.status_code >= 500:
-            print("[API Error "+str(err.response.status_code)+"] - Waiting 5 seconds")
+            print("[requestRankedData - API Error "+str(err.response.status_code)+"] - Waiting 5 seconds")
             time.sleep(5)
             requestRankedData(ID, lol_watcher)
         else:
@@ -94,19 +95,19 @@ def requestRankedData(ID, lol_watcher):
 def requestGamesPlayed(puuid, lol_watcher, queueId, nbGames):
     """Renvoie la liste des games jouées du joueur"""
     try:
-        return lol_watcher.match.matchlist_by_puuid('EUROPE',
+        return lol_watcher.match_v5.matchlist_by_puuid('EUROPE',
                                                        puuid,
                                                        queue = queueId,
                                                        count = nbGames)
     except ApiError as err:
         if err.response.status_code == 429:
-            print('We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
+            print("[requestGamesPlayed - API Error "+str(err.response.status_code)+'] - We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
             time.sleep(int(err.response.headers['Retry-After'])+1)
             requestGamesPlayed(puuid, lol_watcher, queueId, nbGames)
         elif err.response.status_code == 404:
-            print('Matchs list not found.')
+            print("[requestGamesPlayed - API Error "+str(err.response.status_code)+"] - Matchs list not found")
         elif err.response.status_code >= 500:
-            print("[API Error "+str(err.response.status_code)+"] - Waiting 5 seconds")
+            print("[requestGamesPlayed - API Error "+str(err.response.status_code)+"] - Waiting 5 seconds")
             time.sleep(5)
             requestGamesPlayed(puuid, lol_watcher, queueId, nbGames)
         else:
@@ -116,16 +117,16 @@ def requestGamesPlayed(puuid, lol_watcher, queueId, nbGames):
 def requestMatchData(matchId, lol_watcher):
     """Renvoie les données du match"""
     try:
-        return lol_watcher.match.by_id('EUROPE',matchId)
+        return lol_watcher.match_v5.by_id('EUROPE',matchId)
     except ApiError as err:
         if err.response.status_code == 429:
-            print('We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
+            print("[requestMatchData - API Error "+str(err.response.status_code)+'] - We should retry in {} seconds.'.format(err.response.headers['Retry-After']))
             time.sleep(int(err.response.headers['Retry-After'])+1)
             requestMatchData(matchId, lol_watcher)
         elif err.response.status_code == 404:
-            print('Match data not found.')
+            print("[requestMatchData - API Error "+str(err.response.status_code)+"] - Match data not found")
         elif err.response.status_code >= 500:
-            print("[API Error "+str(err.response.status_code)+"] - Waiting 5 seconds")
+            print("[requestMatchData - API Error "+str(err.response.status_code)+"] - Waiting 5 seconds")
             time.sleep(5)
             requestMatchData(matchId, lol_watcher)
         else:
@@ -136,51 +137,74 @@ def getPlayerList(summonerName, playerList, queue, nbGames, nbMaxPlayer, lol_wat
     """Renvoie une liste des joueurs apparu dans les parties des joueurs
     rencontrés par le SummonerName choisi.
     La liste n'excedant pas 10 000 joueurs est exporté en fichier plat."""
-    if len(playerList) == 0:
-        print("starting a new list")
-        matchList = requestGamesPlayed(requestSummonerData(summonerName, lol_watcher)["puuid"], lol_watcher, queue, nbGames)
-        playerList = []
-        for matchId in matchList:
-            print("Step1 : get match data")
-            matchData = requestMatchData(matchId, lol_watcher)
-            if matchData:
-                playerList += matchData['metadata']['participants']
-                playerList = list(dict.fromkeys(playerList))
-
-    playerList_new = []
-    start = True      
-    print("List length:", len(playerList)) 
-    while len(playerList) < nbMaxPlayer:
-        print("starting over...adding more players to the list")
-        if start:
-            playerList_new = playerList            
-        
-        matchList = []                     #on vide la matchList
-        #print("creating matchList with players", playerList_new)    
-        for player in playerList_new:  
-            if start == False and player not in playerList:
-                matchList += requestGamesPlayed(player, lol_watcher, queue, nbGames)     
-            elif start == True:
-                matchList += requestGamesPlayed(player, lol_watcher, queue, nbGames)   
-                
-        print("collecting players id from", len(matchList), "games")
-        if start:
-            start = False
-        playerList += playerList_new
-        playerList = list(dict.fromkeys(playerList))
-        playerList_new = []    
-        for matchId in matchList:
-            matchData = requestMatchData(matchId, lol_watcher)
-            if matchData:
-                #print("adding summoners", matchData['metadata']['participants'])
-                playerList_new += matchData['metadata']['participants']
-                playerList_new = list(dict.fromkeys(playerList_new))
-            if (len(playerList)+len(playerList_new)) > nbMaxPlayer:
-                break  
-        print("adding", len(playerList_new), "players\nList length:", len(playerList)) 
     
-    playerList += playerList_new
-    playerList = list(dict.fromkeys(playerList))  
+    cpt = 0
+    nbPlayer = 2500
+                
+    while len(playerList) < nbMaxPlayer:
+        
+        if len(playerList) == 0:
+            print("starting a new list")
+            matchList = requestGamesPlayed(requestSummonerData(summonerName, lol_watcher)["puuid"], lol_watcher, queue, nbGames)
+            playerList = []
+            for matchId in matchList:
+                matchData = requestMatchData(matchId, lol_watcher)
+                if matchData:
+                    playerList += matchData['metadata']['participants']
+                    playerList = list(dict.fromkeys(playerList))
+                         
+        cpt += 1
+        lng = len(playerList)
+        print(f"[step {cpt}] - max found : {lng} < {nbMaxPlayer}")
+                    
+        matchList = []
+        playerList_new = []           
+        for player in  playerList:
+            matchList = requestGamesPlayed(player, lol_watcher, queue, nbGames)
+            if matchList:
+                for matchId in matchList:
+                    matchData = requestMatchData(matchId, lol_watcher)
+                    if matchData:
+                        playerList_new += matchData['metadata']['participants']
+                        playerList_new = list(dict.fromkeys(playerList_new))
+                        
+                lng = len(playerList_new)
+                print(f"[step {cpt}] - players found : {lng}")
+            
+            if lng > nbMaxPlayer:
+                break
+            
+            if lng > nbPlayer:
+                print(f"[step {cpt}] - saving {lng} puuid")
+                if nbPlayer == 2500:
+                    playerList_temp = []
+                else:
+                    with open('listPUUID.csv', newline='', encoding='UTF8') as f:
+                        playerList_temp = list(csv.reader(f))[0]
+        
+                playerList_temp += playerList_new
+                playerList_temp = list(dict.fromkeys(playerList_temp))
+                
+                with open("listPUUID.csv", 'w', newline='', encoding='UTF8') as f:
+                    csv.writer(f, quoting=csv.QUOTE_ALL).writerow(playerList_temp)
+                    
+                nbPlayer += 2500
+                
+        print(f"[step {cpt}] - saving {lng} puuid")
+        if nbPlayer == 2500:
+            playerList_temp = []
+        else:
+            with open('listPUUID.csv', newline='', encoding='UTF8') as f:
+                playerList_temp = list(csv.reader(f))[0]
+
+        playerList_temp += playerList_new
+        playerList_temp = list(dict.fromkeys(playerList_temp))
+        
+        with open("listPUUID.csv", 'w', newline='', encoding='UTF8') as f:
+            csv.writer(f, quoting=csv.QUOTE_ALL).writerow(playerList_temp)
+            
+        playerList = playerList_new
+        
     return list(dict.fromkeys(playerList))
 
 def getPlayerStatsOnChampion(summonerName, championName):
@@ -195,16 +219,15 @@ def getPlayerStatsOnChampion(summonerName, championName):
     html_doc = response.content
     soup = BeautifulSoup(html_doc, 'html.parser')
     gamesPlayedOnChampion = 0
-    winrateOnChampion = 0.5
-    listgraph = ["graphDD53","graphDD54","graphDD55","graphDD56","graphDD57","graphDD58","graphDD59"]  #list of graphs to check for the player data
+    winrateOnChampion = 50
+    listgraph = ["graphDD53", "graphDD54", "graphDD55", "graphDD56", "graphDD57", "graphDD58", "graphDD59"]  #list of graphs to check for the player data
     for graph in listgraph:
         if soup.find(id=graph):
-            if right(soup.find(id=graph).string.strip(),1) == "%":
-                winrateOnChampion = float(left(soup.find(id=graph).string.strip(),len(soup.find(id=graph).string.strip())-1))
+            if right(soup.find(id=graph).string.strip(), 1) == "%":
+                winrateOnChampion = float(left(soup.find(id=graph).string.strip(), len(soup.find(id=graph).string.strip())-1))
             elif len(soup.find(id=graph).string.strip()) > 0:
                 gamesPlayedOnChampion = int(soup.find(id=graph).string.strip())
     return gamesPlayedOnChampion, winrateOnChampion  
-    
 
 def getRank(rank):
     """Renvoie le rank du jouer en int"""
@@ -300,7 +323,7 @@ def getGameData(matchId, lol_watcher):
                         streak.append(0)
                     #il faut que le joueur ait joué au moins 10 partie
                     if (rankedData[0]['wins'] + rankedData[0]['losses']) > 10 :
-                        winrate.append(round(rankedData[0]['wins']/(rankedData[0]['wins'] + rankedData[0]['losses']),2))
+                        winrate.append(round(rankedData[0]['wins']/(rankedData[0]['wins'] + rankedData[0]['losses']), 2))
                     else: winrate.append(0.5)
                 elif len(rankedData) > 1:
                     if rankedData[1]['queueType'] == "RANKED_SOLO_5x5":                    
@@ -311,7 +334,7 @@ def getGameData(matchId, lol_watcher):
                             streak.append(0)
                         #il faut que le joueur ait joué au moins 10 partie
                         if (rankedData[1]['wins'] + rankedData[1]['losses']) > 10 :
-                            winrate.append(round(rankedData[1]['wins']/(rankedData[1]['wins'] + rankedData[1]['losses']),2))
+                            winrate.append(round(rankedData[1]['wins']/(rankedData[1]['wins'] + rankedData[1]['losses']), 2))
                         else: winrate.append(0.5)
                     elif len(rankedData) == 3:
                         if rankedData[2]['queueType'] == "RANKED_SOLO_5x5":
@@ -322,7 +345,7 @@ def getGameData(matchId, lol_watcher):
                                 streak.append(0)
                             #il faut que le joueur ait joué au moins 10 partie
                             if (rankedData[2]['wins'] + rankedData[2]['losses']) > 10 :
-                                winrate.append(round(rankedData[1]['wins']/(rankedData[1]['wins'] + rankedData[2]['losses']),2))
+                                winrate.append(round(rankedData[1]['wins']/(rankedData[1]['wins'] + rankedData[2]['losses']), 2))
                             else: winrate.append(0.5)
                         else:
                             elo.append(19)
@@ -350,55 +373,54 @@ def getGameData(matchId, lol_watcher):
         if gamesPlayedOnChampion > 5:
             winrateOnChampion.append(wr)
         else:
-            winrateOnChampion.append(0.5)
+            winrateOnChampion.append(50)
         
     eloDiff = round((sum(elo[0:4])/5) - (sum(elo[5:9])/5),2)
 
     ListFinale = {"Rank_0": elo[0], "streak_0": streak[0],
                   "winratePlayer_0": winrate[0], "Team_0": team[0],
                   "Champion_0": champion[0], "Position_0": position[0],
-                  "winrateOnChampion_0":winrateOnChampion[0],
+                  "winrateOnChampion_0": winrateOnChampion[0],
                   "Rank_1": elo[1], "streak_1": streak[1],
                   "winratePlayer_1": winrate[1], "Team_1": team[1],
                   "Champion_1": champion[1], "Position_1": position[1],
-                  "winrateOnChampion_1":winrateOnChampion[1],
+                  "winrateOnChampion_1": winrateOnChampion[1],
                   "Rank_2": elo[2], "streak_2": streak[2],
                   "winratePlayer_2": winrate[2], "Team_2": team[2],
                   "Champion_2": champion[2], "Position_2": position[2],
-                  "winrateOnChampion_2":winrateOnChampion[2],
+                  "winrateOnChampion_2": winrateOnChampion[2],
                   "Rank_3": elo[3], "streak_3": streak[3],
                   "winratePlayer_3": winrate[3], "Team_3": team[3],
                   "Champion_3": champion[3], "Position_3": position[3],
-                  "winrateOnChampion_3":winrateOnChampion[3],
+                  "winrateOnChampion_3": winrateOnChampion[3],
                   "Rank_4": elo[4], "streak_4": streak[4],
                   "winratePlayer_4": winrate[4], "Team_4": team[4],
                   "Champion_4": champion[4], "Position_4": position[4],
-                  "winrateOnChampion_4":winrateOnChampion[4],
+                  "winrateOnChampion_4": winrateOnChampion[4],
                   "Rank_5": elo[5], "streak_5": streak[5],
                   "winratePlayer_5": winrate[5], "Team_5": team[5],
                   "Champion_5": champion[5], "Position_5": position[5],
-                  "winrateOnChampion_5":winrateOnChampion[5],
+                  "winrateOnChampion_5": winrateOnChampion[5],
                   "Rank_6": elo[6], "streak_6": streak[6],
                   "winratePlayer_6": winrate[6], "Team_6": team[6],
                   "Champion_6": champion[6], "Position_6": position[6],
-                  "winrateOnChampion_6":winrateOnChampion[6],
+                  "winrateOnChampion_6" :winrateOnChampion[6],
                   "Rank_7": elo[7], "streak_7": streak[7],
                   "winratePlayer_7": winrate[7], "Team_7": team[7],
                   "Champion_7": champion[7], "Position_7": position[7],
-                  "winrateOnChampion_7":winrateOnChampion[7],
+                  "winrateOnChampion_7": winrateOnChampion[7],
                   "Rank_8": elo[8], "streak_8": streak[8],
                   "winratePlayer_8": winrate[8], "Team_8": team[8],
                   "Champion_8": champion[8], "Position_8": position[8],
-                  "winrateOnChampion_8":winrateOnChampion[8],
+                  "winrateOnChampion_8": winrateOnChampion[8],
                   "Rank_9": elo[9], "streak_9": streak[9],
                   "winratePlayer_9": winrate[9], "Team_9": team[9],
                   "Champion_9": champion[9], "Position_9": position[9],
-                  "winrateOnChampion_9":winrateOnChampion[9],
+                  "winrateOnChampion_9": winrateOnChampion[9],
                   "EloDiff": eloDiff, "Patch": patch, "matchId": matchId,
                   "Win": win}
 
     return ListFinale
-
 
 
 def tonsOfData(puuid, queue, nbGames, chemin_export, lol_watcher, matchListHistory):

@@ -141,4 +141,3 @@ cython_debug/
 #WEC project files
 archive/
 *.csv
-ressources/

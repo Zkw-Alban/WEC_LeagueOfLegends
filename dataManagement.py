@@ -13,12 +13,12 @@ import Fonctions as fc
 
 
 ## 1 - Initialisation
-os.chdir(os.getcwd())
-SUMMONERNAME = r"Oups ça a craqué"
+os.chdir(r"D:\Antoine\CNAM\3A\WEC")
+SUMMONERNAME = r"BOUCHER NOIR"
 lol_watcher = LolWatcher('RGAPI-1497b4c3-048f-4d37-b2f6-c397facefde7')
 QUEUE = 420 #soloQ
 NBGAMES = 3 #nb de parties à ramener à chaque requête
-NBMAXPLAYER = 1000 #= nb max de joueurs dans la liste
+NBMAXPLAYER = 300 #= nb max de joueurs dans la liste
 NEWLIST = True #False=reprend la liste enregistrée et l'aggrandi jusqu'a NBMAXPLAYER si True=repars de 0.
 
 
@@ -29,32 +29,12 @@ NEWLIST = True #False=reprend la liste enregistrée et l'aggrandi jusqu'a NBMAXP
 if NEWLIST:
     playerList = []
 else:
-    with open('listPUUID.csv', newline='') as f:
+    with open('listPUUID.csv', newline='', encoding='UTF8') as f:
         playerList = list(csv.reader(f))[0]
 
 playerList = []
 playerList = fc.getPlayerList(SUMMONERNAME, playerList, QUEUE, NBGAMES, NBMAXPLAYER, lol_watcher)
 
-#On exporte la liste des joueurs
-with open("listPUUID.csv", 'w', newline='') as f:
+## 3 - On exporte la liste des joueurs
+with open("listPUUID.csv", 'w', newline='', encoding='UTF8') as f:
     wr = csv.writer(f, quoting=csv.QUOTE_ALL).writerow(playerList)
-
-#-----------------------------------------------------------------------------------------------------------------------
-#on peut repartir du fichier CSV si on veut pas requêter de nouveaux joueurs
-with open('listPUUID.csv', newline='') as f:
-    playerList = list(csv.reader(f))[0]
-
-## 3 - On récupère les données des parties de joueurs
-matchListHistory = []
-today = date.today().strftime("%Y-%m-%d")
-for i,p in enumerate(playerList):
-    chemin_export = "samplegamedata/" + today + "_tonsOfData" + p
-    matchListHistory = fc.tonsOfData(p, QUEUE, NBGAMES, chemin_export,
-                                     lol_watcher, matchListHistory)
-    print(str(round(i/len(playerList)*100,2))+" % des parties chargées.")
-
-## on garde la liste des match étudiés dans un fichier csv
-with open("matchListHistory.csv", 'w', newline='') as f:
-    wr = csv.writer(f, quoting=csv.QUOTE_ALL)
-    wr.writerow(matchListHistory)
-      

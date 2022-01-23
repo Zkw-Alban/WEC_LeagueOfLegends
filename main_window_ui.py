@@ -84,7 +84,7 @@ class Ui_MainWindow(object):
         self.labelTOP.setScaledContents(True)
         self.labelTOP.setObjectName("labelTOP")
         self.textBlueTop = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBlueTop.setGeometry(QtCore.QRect(160, 230, 331, 91))
+        self.textBlueTop.setGeometry(QtCore.QRect(160, 240, 331, 71))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(223, 190, 122))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -148,12 +148,12 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         self.textBlueTop.setFont(font)
         self.textBlueTop.setStyleSheet("background-color: rgb(6, 26, 37);\n"
-"color: rgb(223, 190, 122);\n"
-"border-color: rgb(6, 26, 37);")
+"border-color: rgb(6, 26, 37);\n"
+"color: rgb(223, 190, 122);")
         self.textBlueTop.setLineWidth(0)
         self.textBlueTop.setObjectName("textBlueTop")
         self.textBlueJgl = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBlueJgl.setGeometry(QtCore.QRect(160, 350, 331, 91))
+        self.textBlueJgl.setGeometry(QtCore.QRect(160, 360, 331, 71))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(223, 190, 122))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -213,16 +213,15 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans Display ExtraCondensed")
         font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.textBlueJgl.setFont(font)
         self.textBlueJgl.setStyleSheet("background-color: rgb(6, 26, 37);\n"
-"color: rgb(223, 190, 122);\n"
-"border-color: rgb(6, 26, 37);")
+"color: rgb(223, 190, 122);")
         self.textBlueJgl.setLineWidth(0)
         self.textBlueJgl.setObjectName("textBlueJgl")
         self.textBlueMid = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBlueMid.setGeometry(QtCore.QRect(160, 470, 331, 91))
+        self.textBlueMid.setGeometry(QtCore.QRect(160, 480, 331, 71))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(223, 190, 122))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -282,8 +281,8 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans Display ExtraCondensed")
         font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.textBlueMid.setFont(font)
         self.textBlueMid.setStyleSheet("background-color: rgb(6, 26, 37);\n"
 "color: rgb(223, 190, 122);\n"
@@ -291,7 +290,7 @@ class Ui_MainWindow(object):
         self.textBlueMid.setLineWidth(0)
         self.textBlueMid.setObjectName("textBlueMid")
         self.textBlueBot = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBlueBot.setGeometry(QtCore.QRect(160, 590, 331, 91))
+        self.textBlueBot.setGeometry(QtCore.QRect(160, 600, 331, 71))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(223, 190, 122))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -351,8 +350,8 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans Display ExtraCondensed")
         font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.textBlueBot.setFont(font)
         self.textBlueBot.setStyleSheet("background-color: rgb(6, 26, 37);\n"
 "color: rgb(223, 190, 122);\n"
@@ -360,7 +359,7 @@ class Ui_MainWindow(object):
         self.textBlueBot.setLineWidth(0)
         self.textBlueBot.setObjectName("textBlueBot")
         self.textBlueSup = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBlueSup.setGeometry(QtCore.QRect(160, 710, 331, 91))
+        self.textBlueSup.setGeometry(QtCore.QRect(160, 720, 331, 71))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(223, 190, 122))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -420,8 +419,8 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans Display ExtraCondensed")
         font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.textBlueSup.setFont(font)
         self.textBlueSup.setStyleSheet("background-color: rgb(6, 26, 37);\n"
 "color: rgb(223, 190, 122);\n"
@@ -429,7 +428,7 @@ class Ui_MainWindow(object):
         self.textBlueSup.setLineWidth(0)
         self.textBlueSup.setObjectName("textBlueSup")
         self.textRedTop = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textRedTop.setGeometry(QtCore.QRect(620, 230, 331, 91))
+        self.textRedTop.setGeometry(QtCore.QRect(620, 240, 331, 71))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(223, 190, 122))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -489,15 +488,15 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans Display ExtraCondensed")
         font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.textRedTop.setFont(font)
         self.textRedTop.setStyleSheet("background-color: rgb(6, 26, 37);\n"
 "color: rgb(223, 190, 122);\n"
 "border-color: rgb(6, 26, 37);")
         self.textRedTop.setObjectName("textRedTop")
         self.textRedJgl = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textRedJgl.setGeometry(QtCore.QRect(620, 350, 331, 91))
+        self.textRedJgl.setGeometry(QtCore.QRect(620, 360, 331, 71))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(223, 190, 122))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -557,15 +556,15 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans Display ExtraCondensed")
         font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.textRedJgl.setFont(font)
         self.textRedJgl.setStyleSheet("background-color: rgb(6, 26, 37);\n"
 "color: rgb(223, 190, 122);\n"
 "border-color: rgb(6, 26, 37);")
         self.textRedJgl.setObjectName("textRedJgl")
         self.textRedMid = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textRedMid.setGeometry(QtCore.QRect(620, 470, 331, 91))
+        self.textRedMid.setGeometry(QtCore.QRect(620, 480, 331, 71))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(223, 190, 122))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -625,15 +624,15 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans Display ExtraCondensed")
         font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.textRedMid.setFont(font)
         self.textRedMid.setStyleSheet("background-color: rgb(6, 26, 37);\n"
 "color: rgb(223, 190, 122);\n"
 "border-color: rgb(6, 26, 37);")
         self.textRedMid.setObjectName("textRedMid")
         self.textRedBot = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textRedBot.setGeometry(QtCore.QRect(620, 590, 331, 91))
+        self.textRedBot.setGeometry(QtCore.QRect(620, 600, 331, 71))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(223, 190, 122))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -693,15 +692,15 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans Display ExtraCondensed")
         font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.textRedBot.setFont(font)
         self.textRedBot.setStyleSheet("background-color: rgb(6, 26, 37);\n"
 "color: rgb(223, 190, 122);\n"
 "border-color: rgb(6, 26, 37);")
         self.textRedBot.setObjectName("textRedBot")
         self.textRedSup = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textRedSup.setGeometry(QtCore.QRect(620, 710, 331, 91))
+        self.textRedSup.setGeometry(QtCore.QRect(620, 720, 331, 71))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(223, 190, 122))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -761,8 +760,8 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans Display ExtraCondensed")
         font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.textRedSup.setFont(font)
         self.textRedSup.setStyleSheet("background-color: rgb(6, 26, 37);\n"
 "color: rgb(223, 190, 122);\n"
@@ -1009,10 +1008,5 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "WEC - Data Alchemist Studio, 2021"))
         self.button_1.setText(_translate("MainWindow", "LANCER"))
-        self.textBlueMain.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Noto Sans Display Black\'; font-size:16pt; font-weight:600; font-style:normal;\">\n"
-"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.actionpgmLauncher.setText(_translate("MainWindow", "pgmLauncher"))
 
