@@ -18,8 +18,9 @@ import cv2
 import Fonctions_Live as fcl
 from main_window_ui import Ui_MainWindow
 
-os.chdir(r"D:\Antoine\CNAM\3A\WEC")
-lol_watcher = LolWatcher('RGAPI-1497b4c3-048f-4d37-b2f6-c397facefde7')     #refresh tous les jours
+os.chdir(r"path")
+API_KEY = 'key'
+lol_watcher = LolWatcher(API_KEY)     #refresh tous les jours
 #pred = prediction(model, gameInfo)
 
 
