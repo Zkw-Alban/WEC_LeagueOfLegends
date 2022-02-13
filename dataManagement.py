@@ -13,9 +13,10 @@ import Fonctions as fc
 
 
 ## 1 - Initialisation
-os.chdir(r"D:\Antoine\CNAM\3A\WEC")
+os.chdir(r"path")
+API_KEY = 'key'
 SUMMONERNAME = r"BOUCHER NOIR"
-lol_watcher = LolWatcher('RGAPI-1497b4c3-048f-4d37-b2f6-c397facefde7')
+lol_watcher = LolWatcher(API_KEY)
 QUEUE = 420 #soloQ
 NBGAMES = 3 #nb de parties à ramener à chaque requête
 NBMAXPLAYER = 300 #= nb max de joueurs dans la liste
