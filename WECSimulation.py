@@ -16,16 +16,10 @@ from PyQt5 import QtCore
 from riotwatcher import LolWatcher
 import cv2
 import Fonctions_Live as fcl
-from main_window_ui import Ui_MainWindow
+from WECPrevLauncher import Ui_MainWindow
 
-<<<<<<< Updated upstream
-os.chdir(r"path")
-API_KEY = 'key'
-lol_watcher = LolWatcher(API_KEY)     #refresh tous les jours
-=======
 os.chdir(os.getcwd())
 lol_watcher = LolWatcher('RGAPI-1497b4c3-048f-4d37-b2f6-c397facefde7')     #refresh tous les jours
->>>>>>> Stashed changes
 #pred = prediction(model, gameInfo)
 
 
@@ -51,8 +45,31 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def pgmLauncher(self):
         """Execute le programme et affiche les infos"""
-        gameData = fcl.requestLiveGameData("https://127.0.0.1:2999/liveclientdata/allgamedata")
-        liveData, displayInfo = fcl.getGameInfo(gameData, lol_watcher)
+        playerList = []
+        playerList.append(self.SNBlueTop.text())
+        playerList.append(self.SNBlueJungle.text())
+        playerList.append(self.SNBlueMid.text())
+        playerList.append(self.SNBlueBot.text())
+        playerList.append(self.SNBlueSup.text())
+        playerList.append(self.SNRedTop.text())
+        playerList.append(self.SNRedJungle.text())
+        playerList.append(self.SNRedMid.text())
+        playerList.append(self.SNRedBot.text())
+        playerList.append(self.SNRedSup.text())
+        print(playerList)
+        championNameList = []
+        championNameList.append(str(self.ChampBlueTop.currentText()))
+        championNameList.append(str(self.ChampBlueJungle.currentText()))
+        championNameList.append(str(self.ChampBlueMid.currentText()))
+        championNameList.append(str(self.ChampBlueBot.currentText()))
+        championNameList.append(str(self.ChampBlueSup.currentText()))
+        championNameList.append(str(self.ChampRedTop.currentText()))
+        championNameList.append(str(self.ChampRedJungle.currentText()))
+        championNameList.append(str(self.ChampRedMid.currentText()))
+        championNameList.append(str(self.ChampRedBot.currentText()))
+        championNameList.append(str(self.ChampRedSup.currentText()))
+        print(championNameList)
+        liveData, displayInfo = fcl.getGameInfo(playerList, championNameList, lol_watcher)
         self.textBlueTop.setHtml("<div style='text-align:center;'>"+displayInfo[0][0]+" "+str(displayInfo[2][0])+"<br />"+str(displayInfo[3][0])+"% wr"+" streak: "+str(displayInfo[4][0])+"</div>")
         self.textBlueJgl.setHtml("<div style='text-align:center;'>"+displayInfo[0][1]+" "+str(displayInfo[2][1])+"<br />"+str(displayInfo[3][1])+"% wr"+" streak: "+str(displayInfo[4][1])+"</div>")
         self.textBlueMid.setHtml("<div style='text-align:center;'>"+displayInfo[0][2]+" "+str(displayInfo[2][2])+"<br />"+str(displayInfo[3][2])+"% wr"+" streak: "+str(displayInfo[4][2])+"</div>")

@@ -11,10 +11,7 @@ import requests
 import numpy as np
 import Fonctions as fc
 
-os.chdir(os.getcwd())
-
-def championName2(championName):
-    """transforme le nom du champion pour qu'il soit harmonisé partout"""
+def championName2(championName):    
     if "'" in championName:
         championName = championName.replace("'","")
     if "." in championName:
@@ -30,50 +27,38 @@ def championName2(championName):
         newName = "MasterYi"
     elif championName == "KaiSa":
         newName = "Kaisa"
-    elif championName == "LeBlanc":
+	elif championName == "LeBlanc":
         newName = "Leblanc"
-    elif championName == "Zeri":
-        newName = "Zoe"
     return newName
 
-def getChampionList():
-    """récupère la liste des noms de tous les champions du jeu pour le patch en cours"""
-    file = open(os.getcwd()+"/ressources/dataDragon/12.1.1/data/en_GB/champion.json",'r',encoding="utf-8")
-    jsonn = json.load(file)
-    championList = []
-    for elemen in jsonn["data"]:
-        championList.append(jsonn["data"][elemen]["name"])
-    championList.sort()
-    return championList
-    
 def requestLiveGameData(URL):
     """Renvoie le fichier JSON associé à la game en cours"""
     return requests.get(URL, verify=False).json()
 
 
-def getGameInfo(playerList, championNameList, lol_watcher):
+def getGameInfo(gameData, lol_watcher, root):
     """Renvoie dans une liste toutes les infos utiles d'une game"""
-    #playerList = []
-    #championNameList = []
+    playerList = []
+    championNameList = []
     positionList = []
     skinList = []
     teamList = []
     championIdList = []
     championWinrateList = []
-    tiles = "ressources/dataDragon/img/champion/tiles/"
+    tiles = root+"/ressources/dataDragon/img/champion/tiles/"
     #Infos depuis le Client
     for i in range(10):
-        with open("ressources/dataDragon/12.1.1/data/fr_FR/champion/"+championName2(championNameList[i])+".json", encoding='utf-8') as json_file:
+        with open(root+"/ressources/dataDragon/12.1.1/data/fr_FR/champion/"+championName2(gameData['allPlayers'][i]['championName'])+".json", encoding='utf-8') as json_file:
             championInfo = json.load(json_file)
-        playerList.append(playerList[i])
-        championNameList.append(championNameList[i])
-        positionList.append(i)
-        if i < 5:
-            teamList.append(100)
-        else:
-            teamList.append(200)
+        playerList.append(gameData['allPlayers'][i]['summonerName'])
+        championNameList.append(gameData['allPlayers'][i]['championName'])
+        positionList.append(gameData['allPlayers'][i]['position'])
+        teamList.append(gameData['allPlayers'][i]['team'])
         championIdList.append(championInfo["data"][championName2(str(championNameList[-1]))]['key'])
-        skinList.append(tiles+championName2(championNameList[i]+"_0")+".jpg")
+        skinList.append(tiles+championName2(gameData['allPlayers'][i]['championName'])+"_"+str(gameData['allPlayers'][i]['skinID'])+".jpg")
+        #Gestion des chromas qui ont un skin id différent mais pas d'image spécifique
+        if not os.path.isfile(skinList[-1]):
+            skinList[-1] = tiles+gameData['allPlayers'][i]['championName']+"_"+str(0)+".jpg"
 
     eloList = []
     rankList = []
@@ -86,7 +71,7 @@ def getGameInfo(playerList, championNameList, lol_watcher):
         summonerInfo = fc.requestSummonerData(p, lol_watcher)
         #On vérifie que le summoner est un joueur
         if summonerInfo:
-            championWinrateList.append(fc.getPlayerStatsOnChampion(playerList[i], championNameList[i])[1])
+            championWinrateList.append(fc.getPlayerStatsOnChampion(gameData['allPlayers'][i]['summonerName'], gameData['allPlayers'][i]['championName'])[1])
             summonerRanked = fc.requestRankedData(summonerInfo['id'], lol_watcher)
             #On vérifie que le summoner a joué en ranked
             if summonerRanked:
@@ -139,7 +124,7 @@ def getGameInfo(playerList, championNameList, lol_watcher):
     eloDiff = np.sum(eloList[0:5])-np.sum(eloList[5:10])
     
     rankList_tmp = rankList
-        
+    
     rankList = [17 if r in ("Not a player", "No Ranked Data", "No SoloQ Data") else r for r in rankList]
 
     liveData = {"Champion_0": championIdList[0],
@@ -152,17 +137,17 @@ def getGameInfo(playerList, championNameList, lol_watcher):
                 "Champion_7": championIdList[7],
                 "Champion_8": championIdList[8],
                 "Champion_9": championIdList[9],
-                "Rank_0": eloList[0],
-                "Rank_1": eloList[1],
-                "Rank_2": eloList[2],
-                "Rank_3": eloList[3],
-                "Rank_4": eloList[4],
-                "Rank_5": eloList[5],
-                "Rank_6": eloList[6],
-                "Rank_7": eloList[7],
-                "Rank_8": eloList[8],
-                "Rank_9": eloList[9],
-                "winrateOnChampion_0": championWinrateList[0],
+                "Rank_0": rankList[0],
+                "Rank_1": rankList[1],
+                "Rank_2": rankList[2],
+                "Rank_3": rankList[3],
+                "Rank_4": rankList[4],
+                "Rank_5": rankList[5],
+                "Rank_6": rankList[6],
+                "Rank_7": rankList[7],
+                "Rank_8": rankList[8],
+                "Rank_9": rankList[9],
+                "winrateOnChampion_": championWinrateList[0],
                 "winrateOnChampion_1": championWinrateList[1],
                 "winrateOnChampion_2": championWinrateList[2],
                 "winrateOnChampion_3": championWinrateList[3],

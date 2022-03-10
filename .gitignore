@@ -141,3 +141,4 @@ cython_debug/
 #WEC project files
 archive/
 *.csv
+random_forest_1.joblib

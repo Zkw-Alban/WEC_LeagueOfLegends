@@ -10,11 +10,15 @@ import csv
 from datetime import date
 from riotwatcher import LolWatcher
 import Fonctions as fc
-
+import json
 
 ## 1 - Initialisation
+<<<<<<< Updated upstream
 os.chdir(r"path")
 API_KEY = 'key'
+=======
+os.chdir(os.getcwd())
+>>>>>>> Stashed changes
 SUMMONERNAME = r"BOUCHER NOIR"
 lol_watcher = LolWatcher(API_KEY)
 QUEUE = 420 #soloQ
@@ -26,7 +30,7 @@ NEWLIST = True #False=reprend la liste enregistrée et l'aggrandi jusqu'a NBMAXP
 ## 2 - On récupère la liste des joueurs puis les infos de leurs parties
 # et on stock ces parties dans des fichiers csv
 # on peut repartir du fichier CSV si on veut pas requêter de nouveaux joueurs
-
+"""
 if NEWLIST:
     playerList = []
 else:
@@ -38,4 +42,15 @@ playerList = fc.getPlayerList(SUMMONERNAME, playerList, QUEUE, NBGAMES, NBMAXPLA
 
 ## 3 - On exporte la liste des joueurs
 with open("listPUUID.csv", 'w', newline='', encoding='UTF8') as f:
+<<<<<<< Updated upstream
     wr = csv.writer(f, quoting=csv.QUOTE_ALL).writerow(playerList)
+=======
+    wr = csv.writer(f, quoting=csv.QUOTE_ALL).writerow(playerList)"""
+
+file = open(os.getcwd()+"/ressources/dataDragon/12.1.1/data/en_GB/champion.json",'r',encoding="utf-8")
+jsonn = json.load(file)
+championList = []
+for elemen in jsonn["data"]:
+    championList.append(jsonn["data"][elemen]["name"])
+    championList.sort()
+>>>>>>> Stashed changes
